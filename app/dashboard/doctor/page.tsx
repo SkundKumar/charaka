@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FileText,
   Users,
@@ -21,9 +21,43 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 
 export default function DoctorDashboard() {
   const [activeTab, setActiveTab] = useState("patients")
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false)
+  const [isScheduleAppointmentOpen, setIsScheduleAppointmentOpen] = useState(false)
+  const [isViewScheduleOpen, setIsViewScheduleOpen] = useState(false)
+  const [todayAppointmentsCount, setTodayAppointmentsCount] = useState(3)
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    age: "",
+    gender: "",
+    condition: "",
+    status: "stable",
+    lastVisit: new Date().toISOString().split('T')[0],
+  })
+  const [newAppointment, setNewAppointment] = useState({
+    patientId: "",
+    patientName: "",
+    date: new Date().toISOString().split('T')[0],
+    time: "09:00",
+    type: "Consultation",
+    notes: "",
+  })
+
+  // Format today's date for comparison
+  const today = new Date().toISOString().split('T')[0]
 
   // Mock data
   const doctor = {
@@ -36,7 +70,7 @@ export default function DoctorDashboard() {
     photo: "/placeholder.svg?height=40&width=40",
   }
 
-  const patients = [
+  const [patients, setPatients] = useState([
     {
       id: 1,
       name: "John Doe",
@@ -73,7 +107,7 @@ export default function DoctorDashboard() {
       condition: "Arthritis",
       status: "worsening",
     },
-  ]
+  ])
 
   const accessRequests = [
     {
@@ -92,12 +126,12 @@ export default function DoctorDashboard() {
     },
   ]
 
-  const appointments = [
+  const [appointments, setAppointments] = useState([
     {
       id: 1,
       patientName: "John Doe",
       patientId: "HLTH-1234-5678",
-      date: "2023-06-25",
+      date: today,
       time: "10:00 AM",
       status: "upcoming",
       type: "Follow-up",
@@ -106,7 +140,7 @@ export default function DoctorDashboard() {
       id: 2,
       patientName: "Jane Smith",
       patientId: "HLTH-2345-6789",
-      date: "2023-06-25",
+      date: today,
       time: "11:30 AM",
       status: "upcoming",
       type: "Consultation",
@@ -115,12 +149,23 @@ export default function DoctorDashboard() {
       id: 3,
       patientName: "Robert Johnson",
       patientId: "HLTH-3456-7890",
-      date: "2023-06-26",
+      date: today,
       time: "09:15 AM",
       status: "upcoming",
       type: "Check-up",
     },
-  ]
+  ])
+
+  // Get today's appointments
+  const todayAppointments = appointments.filter(
+    appointment => appointment.date === today
+  )
+
+  // Update today's appointment count when appointments change
+  useEffect(() => {
+    const count = appointments.filter(appointment => appointment.date === today).length
+    setTodayAppointmentsCount(count)
+  }, [appointments, today])
 
   const handleViewPatient = (id) => {
     toast.success(`Viewing patient ${id}`)
@@ -132,6 +177,109 @@ export default function DoctorDashboard() {
 
   const handleRejectAccess = (id) => {
     toast.success("Access request rejected")
+  }
+
+  const handleAddPatient = () => {
+    // Form validation
+    if (!newPatient.name || !newPatient.age || !newPatient.gender || !newPatient.condition) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    // Create new patient with ID
+    const newPatientWithId = {
+      ...newPatient,
+      id: patients.length + 1,
+      age: parseInt(newPatient.age),
+    }
+
+    // Add to patients array
+    setPatients([...patients, newPatientWithId])
+    
+    // Reset form and close dialog
+    setNewPatient({
+      name: "",
+      age: "",
+      gender: "",
+      condition: "",
+      status: "stable",
+      lastVisit: new Date().toISOString().split('T')[0],
+    })
+    setIsAddPatientOpen(false)
+    
+    // Show success message
+    toast.success(`Patient ${newPatient.name} added successfully`)
+  }
+
+  const handleScheduleAppointment = () => {
+    // Form validation
+    if (!newAppointment.patientId || !newAppointment.date || !newAppointment.time || !newAppointment.type) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    // Create new appointment with ID
+    const newAppointmentWithId = {
+      ...newAppointment,
+      id: appointments.length + 1,
+      status: "upcoming",
+      patientName: patients.find(p => p.id.toString() === newAppointment.patientId)?.name || newAppointment.patientName,
+      time: formatTime(newAppointment.time),
+    }
+
+    // Add to appointments array
+    setAppointments([...appointments, newAppointmentWithId])
+    
+    // Reset form and close dialog
+    setNewAppointment({
+      patientId: "",
+      patientName: "",
+      date: new Date().toISOString().split('T')[0],
+      time: "09:00",
+      type: "Consultation",
+      notes: "",
+    })
+    setIsScheduleAppointmentOpen(false)
+    
+    // Show success message
+    toast.success(`Appointment scheduled successfully`)
+  }
+
+  const formatTime = (time24) => {
+    const [hours, minutes] = time24.split(':');
+    const period = parseInt(hours) >= 12 ? 'PM' : 'AM';
+    const hour12 = parseInt(hours) % 12 || 12;
+    return `${hour12}:${minutes} ${period}`;
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setNewPatient({
+      ...newPatient,
+      [name]: value,
+    })
+  }
+
+  const handleAppointmentInputChange = (e) => {
+    const { name, value } = e.target
+    setNewAppointment({
+      ...newAppointment,
+      [name]: value,
+    })
+  }
+
+  const handleSelectChange = (name, value) => {
+    setNewPatient({
+      ...newPatient,
+      [name]: value,
+    })
+  }
+
+  const handleAppointmentSelectChange = (name, value) => {
+    setNewAppointment({
+      ...newAppointment,
+      [name]: value,
+    })
   }
 
   const sidebarItems = [
@@ -184,11 +332,11 @@ export default function DoctorDashboard() {
             <CardTitle className="text-lg">Today's Appointments</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">3</div>
+            <div className="text-3xl font-bold">{todayAppointmentsCount}</div>
             <div className="text-sm text-gray-600 mt-1">Scheduled for today</div>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={() => setIsViewScheduleOpen(true)}>
               View Schedule
             </Button>
           </CardFooter>
@@ -214,7 +362,7 @@ export default function DoctorDashboard() {
             <CardTitle className="text-lg">Active Patients</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">24</div>
+            <div className="text-3xl font-bold">{patients.length}</div>
             <div className="text-sm text-gray-600 mt-1">Under your care</div>
           </CardContent>
           <CardFooter>
@@ -248,7 +396,10 @@ export default function DoctorDashboard() {
                       className="pl-9 border border-gray-300 rounded-md h-10 w-full text-gray-900 placeholder:text-gray-500"
                     />
                   </div>
-                  <Button className="bg-sky-600 hover:bg-sky-700 text-white">
+                  <Button 
+                    className="bg-sky-600 hover:bg-sky-700 text-white"
+                    onClick={() => setIsAddPatientOpen(true)}
+                  >
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Add Patient
                   </Button>
@@ -320,7 +471,10 @@ export default function DoctorDashboard() {
                   <CardTitle>Upcoming Appointments</CardTitle>
                   <CardDescription>Your scheduled appointments for the next few days</CardDescription>
                 </div>
-                <Button className="bg-sky-600 hover:bg-sky-700 text-white">
+                <Button 
+                  className="bg-sky-600 hover:bg-sky-700 text-white"
+                  onClick={() => setIsScheduleAppointmentOpen(true)}
+                >
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Schedule Appointment
                 </Button>
@@ -407,7 +561,242 @@ export default function DoctorDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add Patient Dialog */}
+      <Dialog open={isAddPatientOpen} onOpenChange={setIsAddPatientOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Patient</DialogTitle>
+            <DialogDescription>
+              Enter patient details to add them to your care list.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="John Doe"
+                value={newPatient.name}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  name="age"
+                  type="number"
+                  placeholder="35"
+                  value={newPatient.age}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select 
+                  value={newPatient.gender}
+                  onValueChange={(value) => handleSelectChange("gender", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="condition">Medical Condition</Label>
+              <Input
+                id="condition"
+                name="condition"
+                placeholder="Hypertension, Diabetes, etc."
+                value={newPatient.condition}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="status">Current Status</Label>
+              <Select 
+                value={newPatient.status}
+                onValueChange={(value) => handleSelectChange("status", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stable">Stable</SelectItem>
+                  <SelectItem value="improving">Improving</SelectItem>
+                  <SelectItem value="worsening">Worsening</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={() => setIsAddPatientOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-sky-600 hover:bg-sky-700 text-white" onClick={handleAddPatient}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add Patient
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule Appointment Dialog */}
+      <Dialog open={isScheduleAppointmentOpen} onOpenChange={setIsScheduleAppointmentOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Schedule New Appointment</DialogTitle>
+            <DialogDescription>
+              Fill in the details to schedule a new patient appointment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="patientId">Select Patient</Label>
+              <Select 
+                value={newAppointment.patientId}
+                onValueChange={(value) => handleAppointmentSelectChange("patientId", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a patient" />
+                </SelectTrigger>
+                <SelectContent>
+                  {patients.map(patient => (
+                    <SelectItem key={patient.id} value={patient.id.toString()}>
+                      {patient.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  name="date"
+                  type="date"
+                  value={newAppointment.date}
+                  onChange={handleAppointmentInputChange}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="time">Time</Label>
+                <Input
+                  id="time"
+                  name="time"
+                  type="time"
+                  value={newAppointment.time}
+                  onChange={handleAppointmentInputChange}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="type">Appointment Type</Label>
+              <Select 
+                value={newAppointment.type}
+                onValueChange={(value) => handleAppointmentSelectChange("type", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Consultation">Consultation</SelectItem>
+                  <SelectItem value="Follow-up">Follow-up</SelectItem>
+                  <SelectItem value="Check-up">Check-up</SelectItem>
+                  <SelectItem value="Treatment">Treatment</SelectItem>
+                  <SelectItem value="Emergency">Emergency</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Input
+                id="notes"
+                name="notes"
+                placeholder="Add any additional information"
+                value={newAppointment.notes}
+                onChange={handleAppointmentInputChange}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={() => setIsScheduleAppointmentOpen(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-sky-600 hover:bg-sky-700 text-white" onClick={handleScheduleAppointment}>
+              <Calendar className="h-4 w-4 mr-2" />
+              Schedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Schedule Dialog */}
+      <Dialog open={isViewScheduleOpen} onOpenChange={setIsViewScheduleOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Today's Schedule</DialogTitle>
+            <DialogDescription>
+              Your appointments scheduled for {new Date().toLocaleDateString()}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {todayAppointments.length > 0 ? (
+              <div className="space-y-4">
+                {todayAppointments
+                  .sort((a, b) => {
+                    // Convert time to 24h format for sorting
+                    const getTimeValue = (timeStr) => {
+                      const [time, period] = timeStr.split(' ');
+                      let [hours, minutes] = time.split(':').map(Number);
+                      if (period === 'PM' && hours < 12) hours += 12;
+                      if (period === 'AM' && hours === 12) hours = 0;
+                      return hours * 60 + minutes;
+                    };
+                    return getTimeValue(a.time) - getTimeValue(b.time);
+                  })
+                  .map((appointment) => (
+                    <div key={appointment.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600">
+                          <Clock className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{appointment.time}</span>
+                            <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200">
+                              {appointment.type}
+                            </Badge>
+                          </div>
+                          <h3 className="text-sm font-medium mt-1">{appointment.patientName}</h3>
+                          <p className="text-xs text-gray-600">ID: {appointment.patientId}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <p>No appointments scheduled for today</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsViewScheduleOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
-
