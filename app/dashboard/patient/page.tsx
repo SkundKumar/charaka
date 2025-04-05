@@ -177,7 +177,7 @@ export default function PatientDashboard() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "/register",
       icon: <LogOut className="h-4 w-4" />,
     },
   ]
