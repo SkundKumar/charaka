@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,14 +10,25 @@ import { toast } from "sonner"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 
 export default function MedicalInfoPage() {
+  const router = useRouter()
   const [allergies, setAllergies] = useState([{ type: "", severity: "mild", reaction: "" }])
   const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "" }])
   const [conditions, setConditions] = useState([{ name: "", diagnosedYear: "", status: "active" }])
   const [bloodType, setBloodType] = useState("")
   const [emergencyContact, setEmergencyContact] = useState({ name: "", relation: "", phone: "" })
   const [isLoading, setIsLoading] = useState(false)
+  const [registrationData, setRegistrationData] = useState(null)
+
+  useEffect(() => {
+    // Retrieve registration data from localStorage
+    const storedData = localStorage.getItem("registrationData")
+    if (storedData) {
+      setRegistrationData(JSON.parse(storedData))
+    }
+  }, [])
 
   const handleAddAllergy = () => {
     setAllergies([...allergies, { type: "", severity: "mild", reaction: "" }])
@@ -71,18 +82,45 @@ export default function MedicalInfoPage() {
     setEmergencyContact({ ...emergencyContact, [field]: value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call to save medical information
-    setTimeout(() => {
-      setIsLoading(false)
-      toast.success("Medical information saved successfully!")
+    // Collect all medical data
+    const medicalData = {
+      allergies,
+      medications,
+      conditions,
+      bloodType,
+      emergencyContact,
+    }
 
-      // Redirect to dashboard
-      window.location.href = "/dashboard/patient"
-    }, 1500)
+    // Combine with registration data
+    const completeData = {
+      ...registrationData,
+      medicalData,
+    }
+
+    try {
+      // In a real app, you would send this data to your API
+      // For now, we'll just log it and simulate an API call
+      console.log("Data to be sent to API:", completeData)
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      // Clear registration data from localStorage
+      localStorage.removeItem("registrationData")
+
+      toast.success("Registration complete! Please log in.")
+
+      // Redirect to login page
+      router.push("/login")
+    } catch (error) {
+      console.error("Error submitting data:", error)
+      toast.error("There was an error submitting your information. Please try again.")
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -454,7 +492,7 @@ export default function MedicalInfoPage() {
               className="w-full bg-sky-600 hover:bg-sky-700 text-white py-6 text-lg"
               disabled={isLoading}
             >
-              {isLoading ? "Saving..." : "Save Medical Information"}
+              {isLoading ? "Saving..." : "Complete Registration"}
               {!isLoading && <ArrowRight className="ml-2 h-5 w-5" />}
             </Button>
           </form>

@@ -300,7 +300,7 @@ export default function DoctorDashboard() {
     },
     {
       title: "Medical Records",
-      href: "/dashboard/doctor/records",
+      href: "/dashboard/doctor/medical-records",
       icon: <FileText className="h-4 w-4" />,
     },
   ]
@@ -800,3 +800,4 @@ export default function DoctorDashboard() {
     </DashboardLayout>
   )
 }
+

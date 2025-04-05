@@ -663,3 +663,4 @@ const AppointmentsPage: React.FC = () => {
 };
 
 export default AppointmentsPage;
+

@@ -13,13 +13,31 @@ import { formatAadharNo } from "@/lib/utils"
 
 type UserType = "patient" | "student"
 
-interface UserData {
-  name: string
-  dob: string
+interface AadharResponse {
+  status: string
+  message: string
+  care_of: string
+  full_address: string
+  date_of_birth: string
+  email_hash: string
   gender: string
-  address: string
-  phone: string
-  email: string
+  name: string
+  address: {
+    country: string
+    district: string
+    house: string
+    landmark: string
+    pincode: number
+    post_office: string
+    state: string
+    street: string
+    subdistrict: string
+    vtc: string
+  }
+  year_of_birth: number
+  mobile_hash: string
+  photo: string
+  share_code: string
 }
 
 export default function RegisterPage() {
@@ -34,6 +52,12 @@ export default function RegisterPage() {
   const [otpError, setOtpError] = useState("")
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [generatedOtp, setGeneratedOtp] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  // Add password fields and state
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [confirmPasswordError, setConfirmPasswordError] = useState("")
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -42,14 +66,35 @@ export default function RegisterPage() {
     { name: "About", link: "/#about" },
   ]
 
-  // Mock user data that would be fetched from Aadhar
-  const [userData, setUserData] = useState<UserData>({
-    name: "John Doe",
-    dob: "1990-01-01",
-    gender: "Male",
-    address: "123 Main St, Delhi, India",
-    phone: "9876543210",
-    email: "",
+  // Mock Aadhar API response data
+  const [userData, setUserData] = useState<AadharResponse>({
+    status: "VALID",
+    message: "Aadhaar Card Exists",
+    care_of: "C/O Ajay Kumar",
+    full_address:
+      "Flat No-154, Plot No-08, Chandanwari Appartment, ., Near Panchshil Appartement, Dwarka Sector-10, Delhi Cantonment, South West Delhi, District Court Complex Dwarka, Delhi, India, 110075",
+    date_of_birth: "10-02-2005",
+    email_hash: "0efffb30cfd80d561f00f8e5a3e6f3c8eec453255f707d3711510b40272e24ce",
+    gender: "M",
+    name: "Anubhav Verma",
+    address: {
+      "@entity": "in.co.sandbox.kyc.aadhaar.okyc.address",
+      country: "India",
+      district: "South West Delhi",
+      house: "Flat No-154, Plot No-08, Chandanwari Appartment",
+      landmark: "Near Panchshil Appartement",
+      pincode: 110075,
+      post_office: "",
+      state: "Delhi",
+      street: ".",
+      subdistrict: "Delhi Cantonment",
+      vtc: "District Court Complex Dwarka",
+    },
+    year_of_birth: 2005,
+    mobile_hash: "9fd5b25c2e16a9d39e55a8ebe34abcf1f021ee0246ce704a637128cace0b2b60",
+    // Using a placeholder for the photo to avoid encoding issues
+    photo: "base64EncodedPhotoString",
+    share_code: "2345",
   })
 
   // Generate a random 6-digit OTP when the component mounts
@@ -76,10 +121,44 @@ export default function RegisterPage() {
     setOtpError("")
   }
 
+  // Add password change handlers
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setPasswordError("")
+  }
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value)
+    setConfirmPasswordError("")
+  }
+
   const handleSendOtp = () => {
-    // For demo purposes, always proceed
-    setStep(2)
-    alert(`OTP sent! For demo purposes, use: ${generatedOtp}`)
+    // Validate Aadhar number
+    if (aadharNumber.replace(/\s/g, "").length !== 12) {
+      setAadharError("Please enter a valid 12-digit Aadhar number")
+      return
+    }
+
+    // Validate password
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters")
+      return
+    }
+
+    // Validate confirm password
+    if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match")
+      return
+    }
+
+    setIsLoading(true)
+
+    // Simulate API call to fetch Aadhar data
+    setTimeout(() => {
+      setIsLoading(false)
+      setStep(2)
+      alert(`OTP sent! For demo purposes, use: ${generatedOtp}`)
+    }, 1500)
   }
 
   const handleVerifyOtp = () => {
@@ -88,12 +167,32 @@ export default function RegisterPage() {
       return
     }
 
-    // For demo purposes, allow any OTP
-    setShowConfirmationModal(true)
+    if (otp !== generatedOtp && otp !== "123456") {
+      setOtpError("Invalid OTP. Please try again.")
+      return
+    }
+
+    setIsLoading(true)
+
+    // Simulate API call to verify OTP and fetch Aadhar data
+    setTimeout(() => {
+      setIsLoading(false)
+      setShowConfirmationModal(true)
+    }, 1500)
   }
 
   const handleConfirmRegister = () => {
-    // In a real app, you would register the user with an API
+    // Store user data in localStorage to use in medical-info page
+    localStorage.setItem(
+      "registrationData",
+      JSON.stringify({
+        aadharNumber: aadharNumber.replace(/\s/g, ""),
+        password,
+        userData,
+      }),
+    )
+
+    // Navigate to medical info page
     router.push("/medical-info")
   }
 
@@ -158,6 +257,25 @@ export default function RegisterPage() {
                     />
 
                     <Input
+                      label="Password"
+                      type="password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      placeholder="Create a password"
+                      error={passwordError}
+                      description="Must be at least 8 characters"
+                    />
+
+                    <Input
+                      label="Confirm Password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      placeholder="Confirm your password"
+                      error={confirmPasswordError}
+                    />
+
+                    <Input
                       label="Email Address (Optional)"
                       value={email}
                       onChange={handleEmailChange}
@@ -166,8 +284,13 @@ export default function RegisterPage() {
                       description="We'll send you a verification code"
                     />
 
-                    <Button variant="pill" className="w-full bg-sky-600 hover:bg-sky-700" onClick={handleSendOtp}>
-                      Send Verification Code
+                    <Button
+                      variant="pill"
+                      className="w-full bg-sky-600 hover:bg-sky-700"
+                      onClick={handleSendOtp}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Sending..." : "Send Verification Code"}
                     </Button>
 
                     {renderDirectNavigationButton()}
@@ -190,8 +313,13 @@ export default function RegisterPage() {
                       error={otpError}
                     />
 
-                    <Button variant="pill" className="w-full bg-sky-600 hover:bg-sky-700" onClick={handleVerifyOtp}>
-                      Verify & Continue
+                    <Button
+                      variant="pill"
+                      className="w-full bg-sky-600 hover:bg-sky-700"
+                      onClick={handleVerifyOtp}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Verifying..." : "Verify & Continue"}
                     </Button>
 
                     <p className="text-center text-sm text-gray-500 dark:text-gray-400">
@@ -221,10 +349,7 @@ export default function RegisterPage() {
       {showConfirmationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <ConfirmationCard
-            userData={{
-              ...userData,
-              email: email || "Not provided",
-            }}
+            userData={userData}
             onConfirm={handleConfirmRegister}
             onCancel={() => setShowConfirmationModal(false)}
           />

@@ -47,6 +47,10 @@ export default function LoginPage() {
   const [governmentIdError, setGovernmentIdError] = useState("")
   const [otpError, setOtpError] = useState("")
 
+  // Add a state for password
+  const [password, setPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+
   // Check if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -89,6 +93,12 @@ export default function LoginPage() {
     setOtpError("")
   }
 
+  // Add a password change handler
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    setPasswordError("")
+  }
+
   const handleSendOtp = () => {
     // For demo purposes, always allow OTP to be sent
     setOtpSent(true)
@@ -97,6 +107,13 @@ export default function LoginPage() {
 
   const handleLogin = () => {
     setIsLoading(true)
+
+    // Validate password if using Aadhar
+    if (verificationMethod === "aadhar" && password.length === 0) {
+      setPasswordError("Please enter your password")
+      setIsLoading(false)
+      return
+    }
 
     // For demo purposes, allow any OTP or use the generated one
     if (otp.length === 0) {
@@ -155,13 +172,23 @@ export default function LoginPage() {
 
           <div className="mt-4">
             {verificationMethod === "aadhar" ? (
-              <Input
-                label="Aadhar Number"
-                value={aadharNumber}
-                onChange={handleAadharChange}
-                placeholder="XXXX XXXX XXXX"
-                error={aadharError}
-              />
+              <div className="space-y-4">
+                <Input
+                  label="Aadhar Number"
+                  value={aadharNumber}
+                  onChange={handleAadharChange}
+                  placeholder="XXXX XXXX XXXX"
+                  error={aadharError}
+                />
+                <Input
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="Enter your password"
+                  error={passwordError}
+                />
+              </div>
             ) : (
               <Input
                 label="Mobile Number"

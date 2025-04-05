@@ -17,7 +17,7 @@ import { ChevronRight, Shield, Users, Database, Lock, Stethoscope, FileText, Fin
 // Use a simple 3D model for the medical representation
 function MedicalModel(props) {
   // Use the duck model which is available by default
-  const { scene } = useGLTF("/assets/base_basic_pbr.glb")
+  const { scene } = useGLTF("/assets/3d/duck.glb")
   return <primitive object={scene} {...props} />
 }
 
@@ -81,19 +81,19 @@ export default function LandingPage() {
       {/* Hero Section with 3D Model */}
       <Spotlight className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <Canvas camera={{ position: [1, 0, 5], fov: 45 }}>
+          <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
             <ambientLight intensity={0.5} />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
             <Suspense fallback={null}>
               <PresentationControls
                 global
-                rotation={[0.8, -Math.PI / 4, 0]}
+                rotation={[0, -Math.PI / 4, 0]}
                 polar={[-Math.PI / 4, Math.PI / 4]}
                 azimuth={[-Math.PI / 4, Math.PI / 4]}
                 config={{ mass: 2, tension: 400 }}
                 snap={{ mass: 4, tension: 400 }}
               >
-                <MedicalModel position={[0.8, 1, 0]} scale={2} rotation={[0.6, Math.PI / 2, 0]} />
+                <MedicalModel position={[0, -1.5, 0]} scale={2} rotation={[0, Math.PI / 2, 0]} />
               </PresentationControls>
               <Environment preset="city" />
             </Suspense>
