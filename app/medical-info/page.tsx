@@ -82,6 +82,7 @@ export default function MedicalInfoPage() {
     setEmergencyContact({ ...emergencyContact, [field]: value })
   }
 
+  // Update the handleSubmit function to send all data to the API
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -95,18 +96,46 @@ export default function MedicalInfoPage() {
       emergencyContact,
     }
 
-    // Combine with registration data
+    // Get registration data from localStorage
+    const storedData = localStorage.getItem("registrationData")
+    const registrationData = storedData ? JSON.parse(storedData) : null
+
+    if (!registrationData) {
+      toast.error("Registration data not found. Please start the registration process again.")
+      setIsLoading(false)
+      router.push("/register")
+      return
+    }
+
+    // Prepare complete data for API
     const completeData = {
-      ...registrationData,
+      aadharNumber: registrationData.aadharNumber,
+      password: registrationData.password,
+      userData: registrationData.userData,
       medicalData,
     }
 
     try {
       // In a real app, you would send this data to your API
-      // For now, we'll just log it and simulate an API call
-      console.log("Data to be sent to API:", completeData)
+      // Replace the URL below with your actual API endpoint
+      console.log("Sending data to API:", completeData)
 
-      // Simulate API call
+      // Uncomment and modify this code when you have your API endpoint
+      /*
+      const response = await fetch('YOUR_API_ENDPOINT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completeData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit registration data');
+      }
+      */
+
+      // Simulate API call for now
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
       // Clear registration data from localStorage
