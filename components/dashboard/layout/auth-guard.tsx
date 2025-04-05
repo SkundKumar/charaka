@@ -17,21 +17,28 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
-      return
-    }
+    // Add a small delay to ensure auth state is loaded
+    const timer = setTimeout(() => {
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+        return
+      }
 
-    // Check if user has required role
-    if (requiredRole && user?.role !== requiredRole) {
-      router.push("/dashboard")
-      return
-    }
+      // Check if user has required role
+      if (requiredRole && user?.role !== requiredRole) {
+        router.push("/dashboard")
+        return
+      }
 
-    setIsLoading(false)
+      setIsAuthorized(true)
+      setIsLoading(false)
+    }, 500)
+
+    return () => clearTimeout(timer)
   }, [isAuthenticated, user, router, pathname, requiredRole])
 
   if (isLoading) {
@@ -43,6 +50,10 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthorized) {
+    return null
   }
 
   return <>{children}</>

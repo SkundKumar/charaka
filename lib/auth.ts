@@ -1,5 +1,8 @@
+// This is a simplified auth utility for demo purposes
+// In a real app, you would use a proper auth solution like NextAuth.js or Clerk
 
 import { create } from "zustand"
+import { persist } from "zustand/middleware"
 
 export type UserRole = "patient" | "doctor" | "government" | "student"
 
@@ -19,15 +22,22 @@ interface AuthState {
   logout: () => void
 }
 
-export const useAuth = create<AuthState>((set) => ({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  login: (user) => set({ user, isAuthenticated: true }),
-  logout: () => set({ user: null, isAuthenticated: false }),
-}))
+export const useAuth = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      login: (user) => set({ user, isAuthenticated: true }),
+      logout: () => set({ user: null, isAuthenticated: false }),
+    }),
+    {
+      name: "auth-storage",
+    },
+  ),
+)
 
-
+// Mock users for demo
 export const mockUsers = {
   patient: {
     id: "patient-1",

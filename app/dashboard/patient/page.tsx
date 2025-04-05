@@ -14,6 +14,7 @@ import {
   Download,
   Share2,
   Home,
+  User,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -24,10 +25,12 @@ import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
 import { useAuth } from "@/lib/auth"
 import { patientApi } from "@/lib/api"
 import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function PatientDashboard() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const [activeTab, setActiveTab] = useState("overview")
+  const router = useRouter()
 
   // State for data
   const [profile, setProfile] = useState(null)
@@ -146,6 +149,11 @@ export default function PatientDashboard() {
     }
   }
 
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Overview",
@@ -167,6 +175,11 @@ export default function PatientDashboard() {
       href: "/dashboard/patient/appointments",
       icon: <Calendar className="h-4 w-4" />,
     },
+    {
+      title: "Profile",
+      href: "/dashboard/patient/profile",
+      icon: <User className="h-4 w-4" />,
+    },
   ]
 
   const sidebarFooterItems = [
@@ -177,8 +190,9 @@ export default function PatientDashboard() {
     },
     {
       title: "Logout",
-      href: "/register",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 

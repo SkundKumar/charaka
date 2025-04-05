@@ -14,6 +14,7 @@ import {
   Eye,
   Home,
   PlusCircle,
+  User,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -33,6 +34,10 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 
+// Update the sidebar items and footer items to handle logout properly
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
+
 export default function DoctorDashboard() {
   const [activeTab, setActiveTab] = useState("patients")
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false)
@@ -45,19 +50,19 @@ export default function DoctorDashboard() {
     gender: "",
     condition: "",
     status: "stable",
-    lastVisit: new Date().toISOString().split('T')[0],
+    lastVisit: new Date().toISOString().split("T")[0],
   })
   const [newAppointment, setNewAppointment] = useState({
     patientId: "",
     patientName: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     time: "09:00",
     type: "Consultation",
     notes: "",
   })
 
   // Format today's date for comparison
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split("T")[0]
 
   // Mock data
   const doctor = {
@@ -157,13 +162,11 @@ export default function DoctorDashboard() {
   ])
 
   // Get today's appointments
-  const todayAppointments = appointments.filter(
-    appointment => appointment.date === today
-  )
+  const todayAppointments = appointments.filter((appointment) => appointment.date === today)
 
   // Update today's appointment count when appointments change
   useEffect(() => {
-    const count = appointments.filter(appointment => appointment.date === today).length
+    const count = appointments.filter((appointment) => appointment.date === today).length
     setTodayAppointmentsCount(count)
   }, [appointments, today])
 
@@ -190,12 +193,12 @@ export default function DoctorDashboard() {
     const newPatientWithId = {
       ...newPatient,
       id: patients.length + 1,
-      age: parseInt(newPatient.age),
+      age: Number.parseInt(newPatient.age),
     }
 
     // Add to patients array
     setPatients([...patients, newPatientWithId])
-    
+
     // Reset form and close dialog
     setNewPatient({
       name: "",
@@ -203,10 +206,10 @@ export default function DoctorDashboard() {
       gender: "",
       condition: "",
       status: "stable",
-      lastVisit: new Date().toISOString().split('T')[0],
+      lastVisit: new Date().toISOString().split("T")[0],
     })
     setIsAddPatientOpen(false)
-    
+
     // Show success message
     toast.success(`Patient ${newPatient.name} added successfully`)
   }
@@ -223,33 +226,34 @@ export default function DoctorDashboard() {
       ...newAppointment,
       id: appointments.length + 1,
       status: "upcoming",
-      patientName: patients.find(p => p.id.toString() === newAppointment.patientId)?.name || newAppointment.patientName,
+      patientName:
+        patients.find((p) => p.id.toString() === newAppointment.patientId)?.name || newAppointment.patientName,
       time: formatTime(newAppointment.time),
     }
 
     // Add to appointments array
     setAppointments([...appointments, newAppointmentWithId])
-    
+
     // Reset form and close dialog
     setNewAppointment({
       patientId: "",
       patientName: "",
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       time: "09:00",
       type: "Consultation",
       notes: "",
     })
     setIsScheduleAppointmentOpen(false)
-    
+
     // Show success message
     toast.success(`Appointment scheduled successfully`)
   }
 
   const formatTime = (time24) => {
-    const [hours, minutes] = time24.split(':');
-    const period = parseInt(hours) >= 12 ? 'PM' : 'AM';
-    const hour12 = parseInt(hours) % 12 || 12;
-    return `${hour12}:${minutes} ${period}`;
+    const [hours, minutes] = time24.split(":")
+    const period = Number.parseInt(hours) >= 12 ? "PM" : "AM"
+    const hour12 = Number.parseInt(hours) % 12 || 12
+    return `${hour12}:${minutes} ${period}`
   }
 
   const handleInputChange = (e) => {
@@ -282,6 +286,15 @@ export default function DoctorDashboard() {
     })
   }
 
+  // Inside the component:
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Dashboard",
@@ -303,6 +316,11 @@ export default function DoctorDashboard() {
       href: "/dashboard/doctor/medical-records",
       icon: <FileText className="h-4 w-4" />,
     },
+    {
+      title: "Profile",
+      href: "/dashboard/doctor/profile",
+      icon: <User className="h-4 w-4" />,
+    },
   ]
 
   const sidebarFooterItems = [
@@ -313,8 +331,9 @@ export default function DoctorDashboard() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 
@@ -396,10 +415,7 @@ export default function DoctorDashboard() {
                       className="pl-9 border border-gray-300 rounded-md h-10 w-full text-gray-900 placeholder:text-gray-500"
                     />
                   </div>
-                  <Button 
-                    className="bg-sky-600 hover:bg-sky-700 text-white"
-                    onClick={() => setIsAddPatientOpen(true)}
-                  >
+                  <Button className="bg-sky-600 hover:bg-sky-700 text-white" onClick={() => setIsAddPatientOpen(true)}>
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Add Patient
                   </Button>
@@ -471,7 +487,7 @@ export default function DoctorDashboard() {
                   <CardTitle>Upcoming Appointments</CardTitle>
                   <CardDescription>Your scheduled appointments for the next few days</CardDescription>
                 </div>
-                <Button 
+                <Button
                   className="bg-sky-600 hover:bg-sky-700 text-white"
                   onClick={() => setIsScheduleAppointmentOpen(true)}
                 >
@@ -567,9 +583,7 @@ export default function DoctorDashboard() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add New Patient</DialogTitle>
-            <DialogDescription>
-              Enter patient details to add them to your care list.
-            </DialogDescription>
+            <DialogDescription>Enter patient details to add them to your care list.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -596,10 +610,7 @@ export default function DoctorDashboard() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="gender">Gender</Label>
-                <Select 
-                  value={newPatient.gender}
-                  onValueChange={(value) => handleSelectChange("gender", value)}
-                >
+                <Select value={newPatient.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
@@ -623,10 +634,7 @@ export default function DoctorDashboard() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="status">Current Status</Label>
-              <Select 
-                value={newPatient.status}
-                onValueChange={(value) => handleSelectChange("status", value)}
-              >
+              <Select value={newPatient.status} onValueChange={(value) => handleSelectChange("status", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -655,14 +663,12 @@ export default function DoctorDashboard() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Schedule New Appointment</DialogTitle>
-            <DialogDescription>
-              Fill in the details to schedule a new patient appointment.
-            </DialogDescription>
+            <DialogDescription>Fill in the details to schedule a new patient appointment.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="patientId">Select Patient</Label>
-              <Select 
+              <Select
                 value={newAppointment.patientId}
                 onValueChange={(value) => handleAppointmentSelectChange("patientId", value)}
               >
@@ -670,7 +676,7 @@ export default function DoctorDashboard() {
                   <SelectValue placeholder="Select a patient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {patients.map(patient => (
+                  {patients.map((patient) => (
                     <SelectItem key={patient.id} value={patient.id.toString()}>
                       {patient.name}
                     </SelectItem>
@@ -702,7 +708,7 @@ export default function DoctorDashboard() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="type">Appointment Type</Label>
-              <Select 
+              <Select
                 value={newAppointment.type}
                 onValueChange={(value) => handleAppointmentSelectChange("type", value)}
               >
@@ -746,9 +752,7 @@ export default function DoctorDashboard() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Today's Schedule</DialogTitle>
-            <DialogDescription>
-              Your appointments scheduled for {new Date().toLocaleDateString()}
-            </DialogDescription>
+            <DialogDescription>Your appointments scheduled for {new Date().toLocaleDateString()}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             {todayAppointments.length > 0 ? (
@@ -757,13 +761,13 @@ export default function DoctorDashboard() {
                   .sort((a, b) => {
                     // Convert time to 24h format for sorting
                     const getTimeValue = (timeStr) => {
-                      const [time, period] = timeStr.split(' ');
-                      let [hours, minutes] = time.split(':').map(Number);
-                      if (period === 'PM' && hours < 12) hours += 12;
-                      if (period === 'AM' && hours === 12) hours = 0;
-                      return hours * 60 + minutes;
-                    };
-                    return getTimeValue(a.time) - getTimeValue(b.time);
+                      const [time, period] = timeStr.split(" ")
+                      let [hours, minutes] = time.split(":").map(Number)
+                      if (period === "PM" && hours < 12) hours += 12
+                      if (period === "AM" && hours === 12) hours = 0
+                      return hours * 60 + minutes
+                    }
+                    return getTimeValue(a.time) - getTimeValue(b.time)
                   })
                   .map((appointment) => (
                     <div key={appointment.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">

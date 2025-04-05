@@ -24,10 +24,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
-import { useAuth } from "@/lib/auth"
 import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
 
 export default function PatientProfilePage() {
   const { user } = useAuth()
@@ -101,6 +102,14 @@ export default function PatientProfilePage() {
     }, 1500)
   }
 
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Overview",
@@ -142,8 +151,9 @@ export default function PatientProfilePage() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 

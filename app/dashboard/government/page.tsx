@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
 import {
   Building2,
   UserPlus,
@@ -130,6 +132,14 @@ export default function GovernmentDashboard() {
     toast.success(`Viewing hospital ${id}`)
   }
 
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Overview",
@@ -166,8 +176,9 @@ export default function GovernmentDashboard() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 

@@ -15,6 +15,7 @@ import {
   LineChart,
   Home,
   PlusCircle,
+  User,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -23,6 +24,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState("datasets")
@@ -111,6 +114,14 @@ export default function StudentDashboard() {
     toast.success(`Viewing dataset ${id}`)
   }
 
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Dashboard",
@@ -132,6 +143,11 @@ export default function StudentDashboard() {
       href: "/dashboard/student/analytics",
       icon: <ChartBar className="h-4 w-4" />,
     },
+    {
+      title: "Profile",
+      href: "/dashboard/student/profile",
+      icon: <User className="h-4 w-4" />,
+    },
   ]
 
   const sidebarFooterItems = [
@@ -142,8 +158,9 @@ export default function StudentDashboard() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 

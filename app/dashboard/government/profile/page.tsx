@@ -11,6 +11,10 @@ import { toast } from "sonner"
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
 import { Progress } from "@/components/ui/progress"
 
+// Update the sidebar items and footer items to handle logout properly
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth"
+
 export default function GovernmentProfile() {
   const [activeTab, setActiveTab] = useState("personal")
   const [isLoading, setIsLoading] = useState(false)
@@ -49,24 +53,13 @@ export default function GovernmentProfile() {
     photo: "/placeholder.svg?height=100&width=100",
   }
 
-  const handleInputChange = (section, field, value) => {
-    setFormData({
-      ...formData,
-      [section]: {
-        ...formData[section],
-        [field]: value,
-      },
-    })
-  }
+  // Inside the component:
+  const router = useRouter()
+  const { logout } = useAuth()
 
-  const handleSave = (section) => {
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      toast.success(`${section.charAt(0).toUpperCase() + section.slice(1)} information updated successfully`)
-    }, 1000)
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
   }
 
   const sidebarItems = [
@@ -105,10 +98,31 @@ export default function GovernmentProfile() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <User className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
+
+  const handleInputChange = (section, field, value) => {
+    setFormData({
+      ...formData,
+      [section]: {
+        ...formData[section],
+        [field]: value,
+      },
+    })
+  }
+
+  const handleSave = (section) => {
+    setIsLoading(true)
+
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false)
+      toast.success(`${section.charAt(0).toUpperCase() + section.slice(1)} information updated successfully`)
+    }, 1000)
+  }
 
   return (
     <DashboardLayout

@@ -293,71 +293,150 @@ export const researchProjects = [
 
 // API functions for patient dashboard
 export const patientApi = {
-  // Get patient profile
   getProfile: async () => {
-    await delay(800)
-    return {
-      name: "John Doe",
-      id: "HLTH-1234-5678",
-      email: "john.doe@example.com",
-      phone: "+91 9876543210",
-      age: 32,
-      bloodType: "O+",
-      photo: "/placeholder.svg?height=40&width=40",
-    }
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          name: "John Doe",
+          id: "HLTH-1234-5678",
+          email: "john.doe@example.com",
+          phone: "+91 9876543210",
+          age: 32,
+          bloodType: "O+",
+        })
+      }, 1000)
+    })
   },
-
-  // Get patient medical records
   getMedicalRecords: async () => {
-    await delay(800)
-    return medicalRecords
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: 1,
+            title: "Blood Test Results",
+            doctor: "Dr. Michael Chen",
+            hospital: "City General Hospital",
+            date: "2023-06-10",
+          },
+          {
+            id: 2,
+            title: "X-Ray Report",
+            doctor: "Dr. Sarah Johnson",
+            hospital: "Medical Research Institute",
+            date: "2023-05-15",
+          },
+          {
+            id: 3,
+            title: "Vaccination Record",
+            doctor: "Dr. Emily Wong",
+            hospital: "Community Health Center",
+            date: "2023-04-22",
+          },
+        ])
+      }, 1000)
+    })
   },
-
-  // Get patient access requests
   getAccessRequests: async () => {
-    await delay(800)
-    return accessRequests
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: 1,
+            name: "Dr. Michael Chen",
+            hospital: "City General Hospital",
+            requestedOn: "2023-06-15",
+            status: "pending",
+          },
+          {
+            id: 2,
+            name: "Dr. Sarah Johnson",
+            hospital: "Medical Research Institute",
+            requestedOn: "2023-06-10",
+            status: "approved",
+          },
+          {
+            id: 3,
+            name: "Dr. Emily Wong",
+            hospital: "Community Health Center",
+            requestedOn: "2023-06-05",
+            status: "rejected",
+          },
+        ])
+      }, 1000)
+    })
   },
-
-  // Get patient appointments
   getAppointments: async () => {
-    await delay(800)
-    return appointments.filter((a) => a.patientName === "John Doe")
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: 1,
+            doctor: "Dr. Michael Chen",
+            date: "2023-06-25",
+            time: "10:00 AM",
+            status: "upcoming",
+          },
+          {
+            id: 2,
+            doctor: "Dr. Sarah Johnson",
+            date: "2023-06-20",
+            time: "11:30 AM",
+            status: "upcoming",
+          },
+          {
+            id: 3,
+            doctor: "Dr. Emily Wong",
+            date: "2023-06-15",
+            time: "09:15 AM",
+            status: "completed",
+          },
+        ])
+      }, 1000)
+    })
   },
-
-  // Approve access request
-  approveAccess: async (id: number) => {
-    await delay(800)
-    toast.success("Access request approved")
-    return { success: true }
+  approveAccess: async (id) => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true })
+      }, 1000)
+    })
   },
-
-  // Reject access request
-  rejectAccess: async (id: number) => {
-    await delay(800)
-    toast.success("Access request rejected")
-    return { success: true }
+  rejectAccess: async (id) => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true })
+      }, 1000)
+    })
   },
-
-  // Download medical record
-  downloadRecord: async (id: number) => {
-    await delay(1200)
-    toast.success("Medical record downloaded")
-    return { success: true }
+  downloadRecord: async (id) => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true })
+      }, 1000)
+    })
   },
-
-  // Share medical record
-  shareRecord: async (id: number) => {
-    await delay(800)
-    toast.success("Medical record shared")
-    return { success: true }
+  shareRecord: async (id) => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true })
+      }, 1000)
+    })
   },
-
-  // Update profile
-  updateProfile: async (data: any) => {
-    await delay(1200)
-    toast.success("Profile updated successfully")
-    return { success: true }
+  updateProfile: async (data) => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ success: true })
+      }, 1000)
+    })
   },
 }
 

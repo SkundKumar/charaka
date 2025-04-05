@@ -29,6 +29,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 
+// Update the sidebar items and footer items to handle logout properly
+import { useRouter } from "next/navigation"
+
 export default function StudentProfilePage() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
@@ -130,6 +133,15 @@ export default function StudentProfilePage() {
     }))
   }
 
+  // Inside the component:
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+  }
+
   const sidebarItems = [
     {
       title: "Dashboard",
@@ -166,8 +178,9 @@ export default function StudentProfilePage() {
     },
     {
       title: "Logout",
-      href: "/login",
+      href: "#",
       icon: <LogOut className="h-4 w-4" />,
+      onClick: handleLogout,
     },
   ]
 

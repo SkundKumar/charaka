@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Bell, User, Settings, LogOut, Search } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/auth"
 
 interface HeaderProps {
   title: string
@@ -20,6 +22,14 @@ interface HeaderProps {
 
 export function Header({ title, user, notifications = 0 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login")
+    setShowUserMenu(false)
+  }
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 p-4">
@@ -92,14 +102,13 @@ export function Header({ title, user, notifications = 0 }: HeaderProps) {
                     Settings
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
-                  <Link
-                    href="/login"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    onClick={() => setShowUserMenu(false)}
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                    onClick={handleLogout}
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
-                  </Link>
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

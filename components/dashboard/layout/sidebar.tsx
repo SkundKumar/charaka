@@ -19,6 +19,7 @@ interface SidebarProps {
     title: string
     href: string
     icon: React.ReactNode
+    onClick?: () => void
   }[]
   logo?: React.ReactNode
   title?: string
@@ -96,7 +97,9 @@ export function Sidebar({ items, footerItems, logo, title }: SidebarProps) {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  pathname === item.href ? "bg-sky-50 text-sky-700" : "text-gray-700 hover:bg-gray-100",
+                  pathname === item.href || pathname.startsWith(`${item.href}/`)
+                    ? "bg-sky-50 text-sky-700"
+                    : "text-gray-700 hover:bg-gray-100",
                 )}
                 onClick={() => isMobile && setMobileOpen(false)}
               >
@@ -111,20 +114,37 @@ export function Sidebar({ items, footerItems, logo, title }: SidebarProps) {
         {footerItems && (
           <div className="border-t border-gray-200 py-4">
             <nav className="space-y-1 px-2">
-              {footerItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                    pathname === item.href ? "bg-sky-50 text-sky-700" : "text-gray-700 hover:bg-gray-100",
-                  )}
-                  onClick={() => isMobile && setMobileOpen(false)}
-                >
-                  <div className="flex-shrink-0">{item.icon}</div>
-                  {!collapsed && <span className="truncate">{item.title}</span>}
-                </Link>
-              ))}
+              {footerItems.map((item) =>
+                item.onClick ? (
+                  <button
+                    key={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors w-full text-left",
+                      pathname === item.href ? "bg-sky-50 text-sky-700" : "text-gray-700 hover:bg-gray-100",
+                    )}
+                    onClick={() => {
+                      if (isMobile) setMobileOpen(false)
+                      item.onClick?.()
+                    }}
+                  >
+                    <div className="flex-shrink-0">{item.icon}</div>
+                    {!collapsed && <span className="truncate">{item.title}</span>}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      pathname === item.href ? "bg-sky-50 text-sky-700" : "text-gray-700 hover:bg-gray-100",
+                    )}
+                    onClick={() => isMobile && setMobileOpen(false)}
+                  >
+                    <div className="flex-shrink-0">{item.icon}</div>
+                    {!collapsed && <span className="truncate">{item.title}</span>}
+                  </Link>
+                ),
+              )}
             </nav>
           </div>
         )}

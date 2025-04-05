@@ -10,21 +10,29 @@ export default function DashboardRedirect() {
   const { user, isAuthenticated } = useAuth()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login")
-      return
-    }
+    // Add a small delay to ensure auth state is loaded
+    const timer = setTimeout(() => {
+      if (!isAuthenticated) {
+        router.push("/login")
+        return
+      }
 
-    // Redirect based on user role
-    if (user?.role === "patient") {
-      router.push("/dashboard/patient")
-    } else if (user?.role === "doctor") {
-      router.push("/dashboard/doctor")
-    } else if (user?.role === "government") {
-      router.push("/dashboard/government")
-    } else if (user?.role === "student") {
-      router.push("/dashboard/student")
-    }
+      // Redirect based on user role
+      if (user?.role === "patient") {
+        router.push("/dashboard/patient")
+      } else if (user?.role === "doctor") {
+        router.push("/dashboard/doctor")
+      } else if (user?.role === "government") {
+        router.push("/dashboard/government")
+      } else if (user?.role === "student") {
+        router.push("/dashboard/student")
+      } else {
+        // Fallback if role is not recognized
+        router.push("/login")
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
   }, [isAuthenticated, user, router])
 
   return (

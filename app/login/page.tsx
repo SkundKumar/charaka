@@ -144,10 +144,10 @@ export default function LoginPage() {
     }, 1500)
   }
 
-    const handleRegister = () => {
-      router.replace("/register");
-    };
-  
+  const handleRegister = () => {
+    router.push("/register")
+  }
+
   const getVerificationMethodForUserType = () => {
     if (userType === "patient" || userType === "student") {
       return (
@@ -375,12 +375,11 @@ export default function LoginPage() {
                     }`}
                     onClick={() => {
                       setActiveTab("register")
-                      
                       setOtpSent(false)
                     }}
                     disabled={userType === "doctor" || userType === "government"}
                   >
-                    <a href="/register">Register</a>
+                    Register
                   </button>
                 </div>
 
