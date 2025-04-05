@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-
+import { useState } from "react"
 import { AuthGuard } from "@/components/dashboard/layout/auth-guard"
 import { Sidebar } from "@/components/dashboard/layout/sidebar"
 import { Header } from "@/components/dashboard/layout/header"
+import { SettingsModal } from "@/components/settings-modal"
 import type { UserRole } from "@/lib/auth"
 
 interface DashboardLayoutProps {
@@ -39,16 +40,29 @@ export function DashboardLayout({
   notifications,
   requiredRole,
 }: DashboardLayoutProps) {
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+
+  // Find the settings item in the footer items and modify its onClick
+  const updatedFooterItems = footerItems?.map((item) => {
+    if (item.title === "Settings") {
+      return {
+        ...item,
+        onClick: () => setShowSettingsModal(true),
+      }
+    }
+    return item
+  })
+
   return (
     <AuthGuard requiredRole={requiredRole}>
       <div className="min-h-screen bg-gray-50">
         <Sidebar
           items={sidebarItems}
-          footerItems={footerItems}
-          title="MediChain"
+          footerItems={updatedFooterItems}
+          title="Charak"
           logo={
             <div className="h-8 w-8 rounded-full bg-sky-600 flex items-center justify-center text-white font-bold">
-              MC
+              CH
             </div>
           }
         />
@@ -56,6 +70,7 @@ export function DashboardLayout({
           <Header title={title} user={user} notifications={notifications} />
           <main className="mt-6">{children}</main>
         </div>
+        <SettingsModal open={showSettingsModal} onOpenChange={setShowSettingsModal} />
       </div>
     </AuthGuard>
   )

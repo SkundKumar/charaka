@@ -379,7 +379,7 @@ export default function LoginPage() {
                     }}
                     disabled={userType === "doctor" || userType === "government"}
                   >
-                    <a href="/register">Register</a>
+                    Register
                   </button>
                 </div>
 

@@ -76,7 +76,7 @@ export function Sidebar({ items, footerItems, logo, title }: SidebarProps) {
           <div className="flex items-center gap-2 overflow-hidden">
             {logo || (
               <div className="h-8 w-8 rounded-full bg-sky-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                MC
+                CH
               </div>
             )}
             {!collapsed && title && <h1 className="text-lg font-bold text-sky-700 truncate">{title}</h1>}
