@@ -1,20 +1,23 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import "./globals.css";
+import { UserProvider } from "@/context/UserContext";
 
-export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
-}
+export const metadata = {
+  title: "Hackaccino 3.0",
+  description: "A Next.js application",
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <UserProvider>
+          {children}
+        </UserProvider>
+      </body>
     </html>
-  )
+  );
 }

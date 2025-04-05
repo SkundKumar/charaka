@@ -26,11 +26,15 @@ import { useAuth } from "@/lib/auth"
 import { patientApi } from "@/lib/api"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useUser } from "@/context/UserContext";
 
 export default function PatientDashboard() {
   const { user, logout } = useAuth()
   const [activeTab, setActiveTab] = useState("overview")
   const router = useRouter()
+  const { user: loggedInUser } = useUser();
+
+  console.log("User from context:", loggedInUser);
 
   // State for data
   const [profile, setProfile] = useState(null)

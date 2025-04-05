@@ -29,16 +29,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth"
+import { useUser } from "@/context/UserContext"
+
 
 export default function PatientProfilePage() {
   const { user } = useAuth()
+  const { user: userContext } = useUser()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
 
   // Profile state
   const [profile, setProfile] = useState({
-    name: "John Doe",
+    name: userContext?.name || "John Doe",
     email: "john.doe@example.com",
     phone: "+91 9876543210",
     address: "123 Main St, Delhi, India",

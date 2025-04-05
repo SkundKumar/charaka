@@ -12,6 +12,7 @@ import { formatAadharNo } from "@/lib/utils"
 import { useAuth, mockUsers } from "@/lib/auth"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
+import { useUser } from "@/context/UserContext";
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,19 +20,50 @@ export default function LoginPage() {
   const redirect = searchParams.get("redirect") || "/dashboard"
   const { login, isAuthenticated } = useAuth()
 
+  const API_BASE = 'http://10.12.16.45:8881/api'
+  
   const [activeTab, setActiveTab] = useState<"login" | "register">("login")
   const [userType, setUserType] = useState<"patient" | "doctor" | "government" | "student" | null>("patient")
   const [verificationMethod, setVerificationMethod] = useState<"aadhar" | "mobile" | "doctorId" | "governmentId">(
     "aadhar",
   )
+  
+  // Form fields
   const [aadharNumber, setAadharNumber] = useState("1234 5678 9012")
   const [mobileNumber, setMobileNumber] = useState("9876543210")
   const [doctorId, setDoctorId] = useState("DOC12345")
   const [governmentId, setGovernmentId] = useState("GOV12345")
+  const [fullName, setFullName] = useState("")
+  const [age, setAge] = useState("")
+  const [contactNumber, setContactNumber] = useState("")
+  const [medicalInfo, setMedicalInfo] = useState(JSON.stringify({
+    bloodGroup: "",
+    allergies: [],
+    chronicConditions: []
+  }, null, 2))
+  
+  // Authentication states
+  const [password, setPassword] = useState("")
   const [otp, setOtp] = useState("")
   const [otpSent, setOtpSent] = useState(false)
   const [generatedOtp, setGeneratedOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Form validation errors
+  const [aadharError, setAadharError] = useState("")
+  const [mobileError, setMobileError] = useState("")
+  const [doctorIdError, setDoctorIdError] = useState("")
+  const [governmentIdError, setGovernmentIdError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [otpError, setOtpError] = useState("")
+  const [nameError, setNameError] = useState("")
+  const [ageError, setAgeError] = useState("")
+  const [contactError, setContactError] = useState("")
+  const [medicalInfoError, setMedicalInfoError] = useState("")
+  
+  // Registration status
+  const [registrationStatus, setRegistrationStatus] = useState<{ message: string; success: boolean; walletAddress?: string } | null>(null)
+  const [loginStatus, setLoginStatus] = useState<{ message: string; success: boolean; patientData?: any } | null>(null)
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -40,16 +72,7 @@ export default function LoginPage() {
     { name: "About", link: "/#about" },
   ]
 
-  // For errors
-  const [aadharError, setAadharError] = useState("")
-  const [mobileError, setMobileError] = useState("")
-  const [doctorIdError, setDoctorIdError] = useState("")
-  const [governmentIdError, setGovernmentIdError] = useState("")
-  const [otpError, setOtpError] = useState("")
-
-  // Add a state for password
-  const [password, setPassword] = useState("")
-  const [passwordError, setPasswordError] = useState("")
+  const { setUser } = useUser();
 
   // Check if already authenticated
   useEffect(() => {
@@ -58,13 +81,14 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router, redirect])
 
-  // Generate a random 6-digit OTP when the component mounts
+  // Generate a random 6-digit OTP when the component mounts (for non-patient flows)
   useEffect(() => {
     const randomOtp = Math.floor(100000 + Math.random() * 900000).toString()
     setGeneratedOtp(randomOtp)
     console.log("Generated OTP:", randomOtp) // For demo purposes
   }, [])
 
+  // Input handlers
   const handleAadharChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatAadharNo(e.target.value.slice(0, 14))
     setAadharNumber(formatted)
@@ -93,10 +117,31 @@ export default function LoginPage() {
     setOtpError("")
   }
 
-  // Add a password change handler
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     setPasswordError("")
+  }
+  
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value)
+    setNameError("")
+  }
+  
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 3)
+    setAge(value)
+    setAgeError("")
+  }
+  
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 10)
+    setContactNumber(value)
+    setContactError("")
+  }
+  
+  const handleMedicalInfoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMedicalInfo(e.target.value)
+    setMedicalInfoError("")
   }
 
   const handleSendOtp = () => {
@@ -105,17 +150,164 @@ export default function LoginPage() {
     toast.success(`OTP sent! For demo purposes, use: ${generatedOtp}`)
   }
 
-  const handleLogin = () => {
+  const handlePatientLogin = async () => {
     setIsLoading(true)
+    setLoginStatus(null)
 
-    // Validate password if using Aadhar
-    if (verificationMethod === "aadhar" && password.length === 0) {
+    // Validate inputs
+    if (aadharNumber.replace(/\s/g, "").length !== 12) {
+      setAadharError("Please enter a valid 12-digit Aadhar number")
+      setIsLoading(false)
+      return
+    }
+
+    if (password.length === 0) {
       setPasswordError("Please enter your password")
       setIsLoading(false)
       return
     }
 
-    // For demo purposes, allow any OTP or use the generated one
+    try {
+      // Make the API call
+      const response = await fetch(`${API_BASE}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientID: aadharNumber.replace(/\s/g, ""),
+          password: password
+        })
+      });
+
+      const result = await response.json();
+      console.log("Login result:", result); 
+      setUser(result.patientData); // For debugging
+
+      if (response.ok) {
+        // Login successful
+        setLoginStatus({
+          message: "Login successful!",
+          success: true,
+          patientData: result.patientData
+        });
+        
+        login(mockUsers.patient);
+        toast.success("Login successful!");
+        router.push(redirect);
+      } else {
+        throw new Error(result.message || "Login failed");
+      }
+    } catch (error: any) {
+      // Handle authentication error
+      setLoginStatus({
+        message: `Error: ${error.message || "Login failed"}`,
+        success: false
+      });
+      toast.error("Login failed. Please check your credentials.");
+      console.error("Login error:", error);
+    }
+
+    setIsLoading(false);
+  }
+
+  const handlePatientRegister = async () => {
+    setIsLoading(true)
+    setRegistrationStatus(null)
+    
+    // Validate inputs
+    let hasErrors = false;
+    
+    if (aadharNumber.replace(/\s/g, "").length !== 12) {
+      setAadharError("Please enter a valid 12-digit Aadhar number")
+      hasErrors = true;
+    }
+    
+    if (fullName.trim().length === 0) {
+      setNameError("Name is required")
+      hasErrors = true;
+    }
+    
+    if (age.trim().length === 0) {
+      setAgeError("Age is required")
+      hasErrors = true;
+    }
+    
+    if (contactNumber.length !== 10) {
+      setContactError("Please enter a valid 10-digit contact number")
+      hasErrors = true;
+    }
+    
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters")
+      hasErrors = true;
+    }
+    
+    try {
+      JSON.parse(medicalInfo);
+    } catch (e) {
+      setMedicalInfoError("Please enter valid JSON for medical info")
+      hasErrors = true;
+    }
+    
+    if (hasErrors) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      // Make the API call
+      const response = await fetch(`${API_BASE}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientID: aadharNumber.replace(/\s/g, ""),
+          name: fullName,
+          age: parseInt(age),
+          contact: contactNumber,
+          password: password,
+          medicalInfo: JSON.parse(medicalInfo)
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Registration successful
+        setRegistrationStatus({
+          message: "Registration successful!",
+          success: true,
+          walletAddress: result.walletAddress
+        });
+        toast.success("Registration successful!");
+        
+        // Clear form
+        setFullName("")
+        setAge("")
+        setContactNumber("")
+        setPassword("")
+        setMedicalInfo(JSON.stringify({
+          bloodGroup: "",
+          allergies: [],
+          chronicConditions: []
+        }, null, 2))
+      } else {
+        throw new Error(result.message || "Registration failed");
+      }
+    } catch (error: any) {
+      setRegistrationStatus({
+        message: `Error: ${error.message || "Registration failed"}`,
+        success: false
+      });
+      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+    }
+
+    setIsLoading(false);
+  }
+
+  const handleOtherUserLogin = () => {
+    setIsLoading(true)
+
+    // For OTP based logins
     if (otp.length === 0) {
       setOtpError("Please enter the OTP")
       setIsLoading(false)
@@ -125,9 +317,7 @@ export default function LoginPage() {
     // Simulate login delay
     setTimeout(() => {
       // Login based on user type
-      if (userType === "patient") {
-        login(mockUsers.patient)
-      } else if (userType === "doctor") {
+      if (userType === "doctor") {
         login(mockUsers.doctor)
       } else if (userType === "government") {
         login(mockUsers.government)
@@ -144,12 +334,93 @@ export default function LoginPage() {
     }, 1500)
   }
 
-  const handleRegister = () => {
-    router.push("/register")
-  }
+  const renderPatientRegistrationForm = () => (
+    <div className="space-y-4">
+      <Input
+        label="Aadhar Number"
+        value={aadharNumber}
+        onChange={handleAadharChange}
+        placeholder="XXXX XXXX XXXX"
+        error={aadharError}
+      />
+      <Input
+        label="Full Name"
+        value={fullName}
+        onChange={handleNameChange}
+        placeholder="Enter your full name"
+        error={nameError}
+      />
+      <Input
+        label="Age"
+        value={age}
+        onChange={handleAgeChange}
+        placeholder="Enter your age"
+        error={ageError}
+        type="number"
+      />
+      <Input
+        label="Contact Number"
+        value={contactNumber}
+        onChange={handleContactChange}
+        placeholder="10-digit contact number"
+        error={contactError}
+      />
+      <Input
+        label="Password"
+        type="password"
+        value={password}
+        onChange={handlePasswordChange}
+        placeholder="Choose a password"
+        error={passwordError}
+      />
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Medical Information (JSON Format)
+        </label>
+        <textarea
+          className="w-full p-2 border border-gray-300 rounded-md dark:border-gray-700 dark:bg-gray-800"
+          value={medicalInfo}
+          onChange={handleMedicalInfoChange}
+          rows={4}
+          placeholder="Enter medical information in JSON format"
+        />
+        {medicalInfoError && <p className="text-sm text-red-600">{medicalInfoError}</p>}
+      </div>
+      
+      {registrationStatus && (
+        <div className={`p-3 rounded-md ${registrationStatus.success ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
+          <p>{registrationStatus.message}</p>
+          {registrationStatus.walletAddress && (
+            <p className="mt-1 text-sm">Your wallet address: {registrationStatus.walletAddress}</p>
+          )}
+        </div>
+      )}
+      
+      <Button
+        className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+        onClick={handlePatientRegister}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Registering...
+          </>
+        ) : (
+          "Register"
+        )}
+      </Button>
+    </div>
+  )
 
   const getVerificationMethodForUserType = () => {
-    if (userType === "patient" || userType === "student") {
+    // For register tab
+    if (activeTab === "register" && userType === "patient") {
+      return renderPatientRegistrationForm();
+    }
+    
+    // For login tab
+    if (userType === "patient") {
       return (
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Verification Method</h2>
@@ -188,7 +459,94 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   error={passwordError}
                 />
+                
+                {loginStatus && (
+                  <div className={`p-3 rounded-md ${loginStatus.success ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300'}`}>
+                    <p>{loginStatus.message}</p>
+                    {loginStatus.patientData && (
+                      <div className="mt-1 text-sm">
+                        <p>Welcome, {loginStatus.patientData.name}!</p>
+                        <p>Patient ID: {loginStatus.patientData.patientID}</p>
+                        <p>Wallet Address: {loginStatus.patientData.walletAddress}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <Button
+                  className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+                  onClick={handlePatientLogin}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    "Login"
+                  )}
+                </Button>
               </div>
+            ) : (
+              <>
+                <Input
+                  label="Mobile Number"
+                  value={mobileNumber}
+                  onChange={handleMobileChange}
+                  placeholder="10-digit mobile number"
+                  error={mobileError}
+                />
+                
+                <Button
+                  className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+                  onClick={handleSendOtp}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send OTP"
+                  )}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )
+    } else if (userType === "student") {
+      return (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Verification Method</h2>
+          <div className="flex space-x-4">
+            <Button
+              variant={verificationMethod === "aadhar" ? "default" : "outline"}
+              className={verificationMethod === "aadhar" ? "bg-sky-600 hover:bg-sky-700 flex-1" : "flex-1"}
+              onClick={() => setVerificationMethod("aadhar")}
+            >
+              Aadhar Number
+            </Button>
+            <Button
+              variant={verificationMethod === "mobile" ? "default" : "outline"}
+              className={verificationMethod === "mobile" ? "bg-sky-600 hover:bg-sky-700 flex-1" : "flex-1"}
+              onClick={() => setVerificationMethod("mobile")}
+            >
+              Mobile Number
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            {verificationMethod === "aadhar" ? (
+              <Input
+                label="Aadhar Number"
+                value={aadharNumber}
+                onChange={handleAadharChange}
+                placeholder="XXXX XXXX XXXX"
+                error={aadharError}
+              />
             ) : (
               <Input
                 label="Mobile Number"
@@ -199,6 +557,21 @@ export default function LoginPage() {
               />
             )}
           </div>
+          
+          <Button
+            className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+            onClick={handleSendOtp}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Send OTP"
+            )}
+          </Button>
         </div>
       )
     } else if (userType === "doctor") {
@@ -212,6 +585,21 @@ export default function LoginPage() {
             placeholder="Enter your Doctor ID"
             error={doctorIdError}
           />
+          
+          <Button
+            className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+            onClick={handleSendOtp}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Send OTP"
+            )}
+          </Button>
         </div>
       )
     } else if (userType === "government") {
@@ -225,6 +613,21 @@ export default function LoginPage() {
             placeholder="Enter your Government ID"
             error={governmentIdError}
           />
+          
+          <Button
+            className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
+            onClick={handleSendOtp}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Send OTP"
+            )}
+          </Button>
         </div>
       )
     }
@@ -251,7 +654,7 @@ export default function LoginPage() {
 
       <Button
         className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
-        onClick={activeTab === "login" ? handleLogin : handleRegister}
+        onClick={handleOtherUserLogin}
         disabled={isLoading}
       >
         {isLoading ? (
@@ -279,7 +682,12 @@ export default function LoginPage() {
   const renderDirectLoginButton = () => (
     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">For demonstration purposes:</p>
-      <Button variant="outline" className="w-full" onClick={handleLogin} disabled={isLoading}>
+      <Button 
+        variant="outline" 
+        className="w-full" 
+        onClick={userType === "patient" && verificationMethod === "aadhar" ? handlePatientLogin : handleOtherUserLogin} 
+        disabled={isLoading}
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -363,6 +771,8 @@ export default function LoginPage() {
                     onClick={() => {
                       setActiveTab("login")
                       setOtpSent(false)
+                      setRegistrationStatus(null)
+                      setLoginStatus(null)
                     }}
                   >
                     Login
@@ -376,6 +786,8 @@ export default function LoginPage() {
                     onClick={() => {
                       setActiveTab("register")
                       setOtpSent(false)
+                      setRegistrationStatus(null)
+                      setLoginStatus(null)
                     }}
                     disabled={userType === "doctor" || userType === "government"}
                   >
@@ -397,30 +809,16 @@ export default function LoginPage() {
 
                 {userType && !((userType === "doctor" || userType === "government") && activeTab === "register") && (
                   <div className="space-y-6">
-                    {!otpSent ? (
-                      <>
-                        {getVerificationMethodForUserType()}
-
-                        <Button
-                          className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
-                          onClick={handleSendOtp}
-                          disabled={isLoading}
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Sending...
-                            </>
-                          ) : (
-                            "Send OTP"
-                          )}
-                        </Button>
-                      </>
-                    ) : (
+                    {/* Show OTP verification if OTP is sent and user is not patient with Aadhar */}
+                    {otpSent && !(userType === "patient" && verificationMethod === "aadhar") ? (
                       renderOtpVerification()
+                    ) : (
+                      // Otherwise show regular verification methods
+                      getVerificationMethodForUserType()
                     )}
 
-                    {renderDirectLoginButton()}
+                    {/* Direct login button for demo purposes */}
+                    {activeTab === "login" && renderDirectLoginButton()}
                   </div>
                 )}
 
@@ -434,7 +832,6 @@ export default function LoginPage() {
           </Card3D>
         </div>
       </div>
-    </main>
-  )
+      </main>
+  );
 }
-
