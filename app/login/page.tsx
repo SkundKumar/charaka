@@ -210,99 +210,91 @@ export default function LoginPage() {
   }
 
   const handlePatientRegister = async () => {
-    setIsLoading(true)
-    setRegistrationStatus(null)
-    
+    setIsLoading(true);
+    setRegistrationStatus(null);
+
     // Validate inputs
     let hasErrors = false;
-    
+
     if (aadharNumber.replace(/\s/g, "").length !== 12) {
-      setAadharError("Please enter a valid 12-digit Aadhar number")
+      setAadharError("Please enter a valid 12-digit Aadhar number");
       hasErrors = true;
     }
-    
+
     if (fullName.trim().length === 0) {
-      setNameError("Name is required")
+      setNameError("Name is required");
       hasErrors = true;
     }
-    
+
     if (age.trim().length === 0) {
-      setAgeError("Age is required")
+      setAgeError("Age is required");
       hasErrors = true;
     }
-    
+
     if (contactNumber.length !== 10) {
-      setContactError("Please enter a valid 10-digit contact number")
+      setContactError("Please enter a valid 10-digit contact number");
       hasErrors = true;
     }
-    
+
     if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters")
+      setPasswordError("Password must be at least 6 characters");
       hasErrors = true;
     }
-    
+
     try {
       JSON.parse(medicalInfo);
     } catch (e) {
-      setMedicalInfoError("Please enter valid JSON for medical info")
+      setMedicalInfoError("Please enter valid JSON for medical info");
       hasErrors = true;
     }
-    
+
     if (hasErrors) {
       setIsLoading(false);
       return;
     }
-    
+
     try {
       // Make the API call
       const response = await fetch(`${API_BASE}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           patientID: aadharNumber.replace(/\s/g, ""),
           name: fullName,
           age: parseInt(age),
           contact: contactNumber,
           password: password,
-          medicalInfo: JSON.parse(medicalInfo)
-        })
+          medicalInfo: JSON.parse(medicalInfo),
+        }),
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         // Registration successful
         setRegistrationStatus({
           message: "Registration successful!",
           success: true,
-          walletAddress: result.walletAddress
+          walletAddress: result.walletAddress,
         });
         toast.success("Registration successful!");
-        
-        // Clear form
-        setFullName("")
-        setAge("")
-        setContactNumber("")
-        setPassword("")
-        setMedicalInfo(JSON.stringify({
-          bloodGroup: "",
-          allergies: [],
-          chronicConditions: []
-        }, null, 2))
+
+        // Redirect to medical-info page
+        router.push("/medical-info");
       } else {
         throw new Error(result.message || "Registration failed");
       }
     } catch (error: any) {
       setRegistrationStatus({
         message: `Error: ${error.message || "Registration failed"}`,
-        success: false
+        success: false,
       });
       toast.error("Registration failed. Please try again.");
       console.error("Registration error:", error);
     }
 
     setIsLoading(false);
-  }
+  };
 
   const handleOtherUserLogin = () => {
     setIsLoading(true)
@@ -398,13 +390,13 @@ export default function LoginPage() {
       
       <Button
         className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
-        onClick={handlePatientRegister}
+        onClick={() => router.push("/register")}
         disabled={isLoading}
       >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Registering...
+            Redirecting...
           </>
         ) : (
           "Register"
@@ -646,8 +638,7 @@ export default function LoginPage() {
             ? "registered mobile number"
             : verificationMethod === "aadhar"
               ? "Aadhar-linked mobile"
-              : "mobile number"}
-        .
+              : "mobile number"}.
       </p>
 
       <Input label="Enter OTP" value={otp} onChange={handleOtpChange} placeholder="6-digit OTP" error={otpError} />
