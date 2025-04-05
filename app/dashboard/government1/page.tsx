@@ -21,10 +21,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { DashboardLayout } from "@/components/dashboard/layout/dashboard-layout"
-import { Overview } from "./components/overview"
-import { StateDistribution } from "./components/state-distribution"
-import { HospitalRegistrations } from "./components/hospital-registrations"
-import { RecentActivity } from "./components/recent-activity"
 
 export default function GovernmentDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
@@ -100,85 +96,24 @@ export default function GovernmentDashboard() {
       value: "12,450",
       change: "+5.2%",
       trend: "up",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="h-4 w-4 text-muted-foreground"
-        >
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-      ),
     },
     {
       title: "Registered Doctors",
       value: "1,245",
       change: "+3.8%",
       trend: "up",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="h-4 w-4 text-muted-foreground"
-        >
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-      ),
     },
     {
       title: "Active Hospitals",
       value: "128",
       change: "+2.1%",
       trend: "up",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="h-4 w-4 text-muted-foreground"
-        >
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-      ),
     },
     {
       title: "Data Transactions",
       value: "45,678",
       change: "+12.4%",
       trend: "up",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="h-4 w-4 text-muted-foreground"
-        >
-          <rect width="20" height="14" x="2" y="5" rx="2" />
-          <path d="M2 10h20" />
-        </svg>
-      ),
     },
   ]
 
@@ -238,98 +173,98 @@ export default function GovernmentDashboard() {
       user={admin}
       notifications={2}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {statistics.map((stat, index) => (
           <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              {stat.icon}
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">{stat.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground flex items-center">
-                <span className="text-green-500 flex items-center">
+              <div className="text-3xl font-bold">{stat.value}</div>
+              <div
+                className={`text-sm mt-1 flex items-center ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}
+              >
+                {stat.change}
+                {stat.trend === "up" ? (
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
+                    className="w-4 h-4 ml-1"
                     fill="none"
                     stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                    <polyline points="16 7 22 7 22 13" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                   </svg>
-                  {stat.change}
-                </span>
-                <span className="ml-1">from last month</span>
-              </p>
+                ) : (
+                  <svg
+                    className="w-4 h-4 ml-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="demographics">Demographics</TabsTrigger>
           <TabsTrigger value="hospitals">Hospitals</TabsTrigger>
           <TabsTrigger value="registrations">Registration Requests</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Healthcare System Overview</CardTitle>
-                <CardDescription>Monthly patient registrations and hospital enrollments</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <Overview />
-              </CardContent>
-            </Card>
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>State-wise Distribution</CardTitle>
-                <CardDescription>Hospital distribution across states</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StateDistribution />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system activities and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RecentActivity />
-              </CardContent>
-            </Card>
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Hospital Registrations</CardTitle>
-                <CardDescription>New hospital registrations by month</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <HospitalRegistrations />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="demographics" className="space-y-4">
+        <TabsContent value="overview">
           <Card>
             <CardHeader>
-              <CardTitle>Demographic Data</CardTitle>
-              <CardDescription>Patient and healthcare provider demographics across the country</CardDescription>
+              <CardTitle>System Overview</CardTitle>
+              <CardDescription>Summary of the healthcare blockchain system</CardDescription>
             </CardHeader>
-            <CardContent className="pl-2">
-              <iframe className="w-full aspect-[16/9] rounded-md border" src="/dashboard/government/demographics" />
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-4">Recent Activity</h3>
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <UserPlus className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">New registration request</p>
+                        <p className="text-xs text-gray-600">Dr. Emily Wong from City General Hospital</p>
+                        <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">New hospital added</p>
+                        <p className="text-xs text-gray-600">Rural Medical College in Pune, Maharashtra</p>
+                        <p className="text-xs text-gray-500 mt-1">1 day ago</p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                        <Database className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">System update completed</p>
+                        <p className="text-xs text-gray-600">Blockchain infrastructure updated to version 2.4</p>
+                        <p className="text-xs text-gray-500 mt-1">2 days ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -466,3 +401,4 @@ export default function GovernmentDashboard() {
     </DashboardLayout>
   )
 }
+
