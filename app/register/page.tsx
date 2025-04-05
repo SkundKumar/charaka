@@ -44,16 +44,14 @@ export default function RegisterPage() {
   const router = useRouter()
   const [userType, setUserType] = useState<UserType>("patient")
   const [aadharNumber, setAadharNumber] = useState("1234 5678 9012")
-  const [email, setEmail] = useState("user@example.com")
   const [otp, setOtp] = useState("")
   const [step, setStep] = useState(1)
   const [aadharError, setAadharError] = useState("")
-  const [emailError, setEmailError] = useState("")
   const [otpError, setOtpError] = useState("")
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [generatedOtp, setGeneratedOtp] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  // Add password fields and state
+  // Password fields
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
@@ -110,18 +108,13 @@ export default function RegisterPage() {
     setAadharError("")
   }
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    setEmailError("")
-  }
-
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6)
     setOtp(value)
     setOtpError("")
   }
 
-  // Add password change handlers
+  // Password change handlers
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     setPasswordError("")
@@ -153,7 +146,7 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
-    // Simulate API call to fetch Aadhar data
+    // Simulate API call to fetch Aadhar data and send OTP
     setTimeout(() => {
       setIsLoading(false)
       setStep(2)
@@ -275,15 +268,6 @@ export default function RegisterPage() {
                       error={confirmPasswordError}
                     />
 
-                    <Input
-                      label="Email Address (Optional)"
-                      value={email}
-                      onChange={handleEmailChange}
-                      placeholder="your@email.com"
-                      error={emailError}
-                      description="We'll send you a verification code"
-                    />
-
                     <Button
                       variant="pill"
                       className="w-full bg-sky-600 hover:bg-sky-700"
@@ -301,8 +285,7 @@ export default function RegisterPage() {
                 {step === 2 && (
                   <div className="space-y-6">
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      A 6-digit verification code has been sent to your{" "}
-                      {email ? "email" : "Aadhar-linked mobile number"}.
+                      A 6-digit verification code has been sent to your Aadhar-linked mobile number.
                     </p>
 
                     <Input

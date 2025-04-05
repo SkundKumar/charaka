@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
+{import {
   type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
@@ -11,7 +11,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table"}
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { Button } from "@/component/ui/button"
