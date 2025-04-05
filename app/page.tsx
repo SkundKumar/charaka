@@ -17,7 +17,7 @@ import { ChevronRight, Shield, Users, Database, Lock, Stethoscope, FileText, Fin
 // Use a simple 3D model for the medical representation
 function MedicalModel(props) {
   // Use the duck model which is available by default
-  const { scene } = useGLTF("/assets/3d/duck.glb")
+  const { scene } = useGLTF("/assets/base_basic_pbr.glb")
   return <primitive object={scene} {...props} />
 }
 
@@ -87,13 +87,13 @@ export default function LandingPage() {
             <Suspense fallback={null}>
               <PresentationControls
                 global
-                rotation={[0, -Math.PI / 4, 0]}
+                rotation={[1.3, -Math.PI / 4, 0.2]}
                 polar={[-Math.PI / 4, Math.PI / 4]}
                 azimuth={[-Math.PI / 4, Math.PI / 4]}
                 config={{ mass: 2, tension: 400 }}
                 snap={{ mass: 4, tension: 400 }}
               >
-                <MedicalModel position={[0, -1.5, 0]} scale={2} rotation={[0, Math.PI / 2, 0]} />
+                <MedicalModel position={[0, -1.5, -1]} scale={3} rotation={[-0.5, Math.PI / 2, 0]} />
               </PresentationControls>
               <Environment preset="city" />
             </Suspense>
