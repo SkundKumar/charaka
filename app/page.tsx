@@ -17,7 +17,7 @@ import { ChevronRight, Shield, Users, Database, Lock, Stethoscope, FileText, Fin
 // Use a simple 3D model for the medical representation
 function MedicalModel(props) {
   // Use the duck model which is available by default
-  const { scene } = useGLTF("/assets/3d/duck.glb")
+  const { scene } = useGLTF("/assets/base_basic_pbr.glb")
   return <primitive object={scene} {...props} />
 }
 
