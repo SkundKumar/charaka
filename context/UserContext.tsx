@@ -4,24 +4,52 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export type UserType = {
-    name: string;
-    age: string;
-    contact: string;
-    privateKey: string;
-    walletAddress: string;
-    medicalInfo: {
-      allergies: string[];
-      bloodGroup: string;
-      chronicConditions: string[];
+  aadharNumber: string;
+  basicDetails: {
+    code: number;
+    data: {
+      address: {
+        country: string;
+        district: string;
+        house: string;
+        landmark: string;
+        pincode: string;
+        postOffice: string;
+        state: string;
+        street: string;
+        subdistrict: string;
+        vtc: string;
+      };
+      careOf: string;
+      dateOfBirth: string;
+      emailHash: string;
+      fullAddress: string;
+      gender: string;
+      mobileHash: string;
+      name: string;
+      referenceId: string;
+      shareCode: string;
+      status: string;
+      yearOfBirth: number;
     };
+    message: string;
   };
-  
+  createdAt: string;
+  medicalDetails: {
+    allergies: { reaction: string; severity: string; type: string }[];
+    bloodGroup: string;
+  };
+  password: string;
+  userId: string;
+};
+
 type UserContextType = {
   user: UserType | null;
   setUser: (user: UserType) => void;
 };
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const UserContext = createContext<{ user: UserContextType | null }>({ user: null });
+
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserType | null>(null);

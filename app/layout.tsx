@@ -6,14 +6,10 @@ export const metadata = {
   description: "A Next.js application",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning={true}>
         <UserProvider>
           {children}
         </UserProvider>

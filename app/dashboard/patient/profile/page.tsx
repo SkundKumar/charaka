@@ -39,26 +39,78 @@ export default function PatientProfilePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState("personal")
 
-  // Profile state
-  const [profile, setProfile] = useState({
-    name: userContext?.name || "John Doe",
-    email: "john.doe@example.com",
-    phone: userContext?.contact || "+91 9876543210",
-    address: "123 Main St, Delhi, India",
-    dateOfBirth: "1990-01-01",
-    gender: "male",
-    bloodType: "O+",
-    height: "175",
-    weight: "70",
+  console.log("User Context on dashboard :", userContext)
+
+  interface Profile {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    dateOfBirth: string;
+    gender: string;
+    bloodType: string;
+    height: string;
+    weight: string;
     emergencyContact: {
-      name: "Jane Doe",
-      relationship: "Spouse",
-      phone: "+91 9876543211",
+      name: string;
+      relationship: string;
+      phone: string;
+    };
+    allergies: string[];
+    chronicConditions: string[];
+    bio: string;
+  }
+
+  const [profile, setProfile] = useState<Profile>({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    dateOfBirth: "",
+    gender: "",
+    bloodType: "",
+    height: "",
+    weight: "",
+    emergencyContact: {
+      name: "",
+      relationship: "",
+      phone: "",
     },
-    allergies: ["Penicillin", "Peanuts"],
-    chronicConditions: ["Hypertension"],
-    bio: "I'm a software engineer with a focus on healthcare technology. I'm passionate about using technology to improve healthcare outcomes.",
-  })
+    allergies: [],
+    chronicConditions: [],
+    bio: "",
+  });
+
+ useEffect(() => {
+  if (userContext?.data) {
+    // Extract basic details from the nested structure
+    const basicDetails = userContext.data.basic_details?.data || {};
+    const address = basicDetails.address || {};
+    const medicalDetails = userContext.data.medical_details || {};
+
+    setProfile({
+      name: basicDetails.name || "John Doe",
+      email: basicDetails.email_hash ? `${basicDetails.email_hash}@example.com` : "risshirajsen@example.com",
+      phone: basicDetails.mobile_hash ? `+91 ${basicDetails.mobile_hash}` : "+91 9876543210",
+      address: `${address.house || ''}, ${address.street || ''}, ${address.vtc || ''}, ${address.district || ''}, ${address.state || ''}, ${address.country || ''} - ${address.pincode || ''}`,
+      dateOfBirth: basicDetails.dateofBirth|| "1990-01-01",
+      gender: basicDetails.gender || "male",
+      bloodType: medicalDetails.bloodGroup || "O+",
+      height: "175",
+      weight: "70",
+      emergencyContact: {
+        name: "Jane Doe",
+        relationship: "Spouse",
+        phone: "+91 9876543211",
+      },
+      allergies: medicalDetails.allergies?.map((a) => `${a.reaction} (${a.severity})`) || [],
+      chronicConditions: [],
+      bio: `Hello, I am ${basicDetails.name || 'there'}. I care about my health and wellbeing.`,
+    });
+
+    setIsLoading(false);
+  }
+}, [userContext]);
 
   // Simulate loading profile data
   useEffect(() => {

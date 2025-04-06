@@ -180,7 +180,7 @@ export default function LoginPage() {
 
       const result = await response.json();
       console.log("Login result:", result); 
-      setUser(result.data); // For debugging
+      setUser(result); // For debugging
 
       if (response.ok) {
         // Login successful
