@@ -169,7 +169,7 @@ export default function LoginPage() {
 
     try {
       // Make the API call
-      const response = await fetch(`${API_BASE}/login`, {
+      const response = await fetch(`http://10.12.16.45:4505/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,14 +180,14 @@ export default function LoginPage() {
 
       const result = await response.json();
       console.log("Login result:", result); 
-      setUser(result.patientData); // For debugging
+      setUser(result.data); // For debugging
 
       if (response.ok) {
         // Login successful
         setLoginStatus({
           message: "Login successful!",
           success: true,
-          patientData: result.patientData
+          patientData: result.data
         });
         
         login(mockUsers.patient);

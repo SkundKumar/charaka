@@ -67,6 +67,7 @@ export default function DoctorDashboard() {
 
   const { user: loggedInUser } = useUser();
   console.log("Logged in user:", loggedInUser);
+  
   const [currentMeetingLink, setCurrentMeetingLink] = useState("")
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false)
   const [currentAppointment, setCurrentAppointment] = useState(null)
