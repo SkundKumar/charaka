@@ -43,7 +43,7 @@ export default function PatientProfilePage() {
   const [profile, setProfile] = useState({
     name: userContext?.name || "John Doe",
     email: "john.doe@example.com",
-    phone: "+91 9876543210",
+    phone: userContext?.contact || "+91 9876543210",
     address: "123 Main St, Delhi, India",
     dateOfBirth: "1990-01-01",
     gender: "male",

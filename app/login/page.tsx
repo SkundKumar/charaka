@@ -328,7 +328,7 @@ export default function LoginPage() {
 
   const renderPatientRegistrationForm = () => (
     <div className="space-y-4">
-      <Input
+      {/* <Input
         label="Aadhar Number"
         value={aadharNumber}
         onChange={handleAadharChange}
@@ -387,7 +387,7 @@ export default function LoginPage() {
           )}
         </div>
       )}
-      
+       */}
       <Button
         className="w-full mt-4 z-50 bg-sky-600 hover:bg-sky-700"
         onClick={() => router.push("/register")}
@@ -399,7 +399,7 @@ export default function LoginPage() {
             Redirecting...
           </>
         ) : (
-          "Register"
+          "Proceed to Registration"
         )}
       </Button>
     </div>
@@ -411,7 +411,6 @@ export default function LoginPage() {
       return renderPatientRegistrationForm();
     }
     
-    // For login tab
     if (userType === "patient") {
       return (
         <div className="space-y-4">

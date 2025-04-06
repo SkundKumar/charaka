@@ -90,10 +90,32 @@ export default function MedicalInfoPage() {
     // Collect all medical data
     const medicalData = {
       allergies,
-      medications,
-      conditions,
+      // medications,
+      // conditions,
       bloodType,
-      emergencyContact,
+    }
+
+    try {
+      const response = await fetch("http://10.12.16.45:4505/register_user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(medicalData),
+      });
+
+      if (!response.ok) {
+      throw new Error("Failed to register medical data");
+      }
+
+      const result = await response.json();
+      console.log("Registration successful:", result);
+      toast.success("Medical data registered successfully!");
+    } catch (error) {
+      console.error("Error registering medical data:", error);
+      toast.error("Failed to register medical data. Please try again.");
+      setIsLoading(false);
+      return;
     }
 
     // Get registration data from localStorage
@@ -265,86 +287,86 @@ export default function MedicalInfoPage() {
               </Button>
             </div>
 
-            {/* Medications Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Pill className="h-5 w-5 text-sky-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Current Medications</h2>
-              </div>
+            {/* Medications Section
+            // <div className="space-y-4">
+            //   <div className="flex items-center gap-2">
+            //     <Pill className="h-5 w-5 text-sky-600" />
+            //     <h2 className="text-xl font-semibold text-gray-900">Current Medications</h2>
+            //   </div>
 
-              {medications.map((medication, index) => (
-                <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-gray-700 font-medium">Medication #{index + 1}</h3>
-                    {medications.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => handleRemoveMedication(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+            //   {medications.map((medication, index) => (
+            //     <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+            //       <div className="flex justify-between items-center">
+            //         <h3 className="text-gray-700 font-medium">Medication #{index + 1}</h3>
+            //         {medications.length > 1 && (
+            //           <Button
+            //             type="button"
+            //             variant="ghost"
+            //             size="sm"
+            //             className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50"
+            //             onClick={() => handleRemoveMedication(index)}
+            //           >
+            //             <Trash2 className="h-4 w-4" />
+            //           </Button>
+            //         )}
+            //       </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={`medication-name-${index}`} className="text-gray-700">
-                        Medication Name
-                      </Label>
-                      <Input
-                        id={`medication-name-${index}`}
-                        placeholder="e.g., Lisinopril"
-                        value={medication.name}
-                        onChange={(e) => handleMedicationChange(index, "name", e.target.value)}
-                        className="border-gray-300 text-gray-900 placeholder:text-gray-500"
-                      />
-                    </div>
+            //       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            //         <div className="space-y-2">
+            //           <Label htmlFor={`medication-name-${index}`} className="text-gray-700">
+            //             Medication Name
+            //           </Label>
+            //           <Input
+            //             id={`medication-name-${index}`}
+            //             placeholder="e.g., Lisinopril"
+            //             value={medication.name}
+            //             onChange={(e) => handleMedicationChange(index, "name", e.target.value)}
+            //             className="border-gray-300 text-gray-900 placeholder:text-gray-500"
+            //           />
+            //         </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`medication-dosage-${index}`} className="text-gray-700">
-                        Dosage
-                      </Label>
-                      <Input
-                        id={`medication-dosage-${index}`}
-                        placeholder="e.g., 10mg"
-                        value={medication.dosage}
-                        onChange={(e) => handleMedicationChange(index, "dosage", e.target.value)}
-                        className="border-gray-300 text-gray-900 placeholder:text-gray-500"
-                      />
-                    </div>
+            //         <div className="space-y-2">
+            //           <Label htmlFor={`medication-dosage-${index}`} className="text-gray-700">
+            //             Dosage
+            //           </Label>
+            //           <Input
+            //             id={`medication-dosage-${index}`}
+            //             placeholder="e.g., 10mg"
+            //             value={medication.dosage}
+            //             onChange={(e) => handleMedicationChange(index, "dosage", e.target.value)}
+            //             className="border-gray-300 text-gray-900 placeholder:text-gray-500"
+            //           />
+            //         </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor={`medication-frequency-${index}`} className="text-gray-700">
-                        Frequency
-                      </Label>
-                      <Input
-                        id={`medication-frequency-${index}`}
-                        placeholder="e.g., Once daily"
-                        value={medication.frequency}
-                        onChange={(e) => handleMedicationChange(index, "frequency", e.target.value)}
-                        className="border-gray-300 text-gray-900 placeholder:text-gray-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+            //         <div className="space-y-2">
+            //           <Label htmlFor={`medication-frequency-${index}`} className="text-gray-700">
+            //             Frequency
+            //           </Label>
+            //           <Input
+            //             id={`medication-frequency-${index}`}
+            //             placeholder="e.g., Once daily"
+            //             value={medication.frequency}
+            //             onChange={(e) => handleMedicationChange(index, "frequency", e.target.value)}
+            //             className="border-gray-300 text-gray-900 placeholder:text-gray-500"
+            //           />
+            //         </div>
+            //       </div>
+            //     </div>
+            //   ))}
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-dashed border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={handleAddMedication}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Another Medication
-              </Button>
-            </div>
+            //   <Button
+            //     type="button"
+            //     variant="outline"
+            //     className="w-full border-dashed border-gray-300 text-gray-700 hover:bg-gray-50"
+            //     onClick={handleAddMedication}
+            //   >
+            //     <Plus className="mr-2 h-4 w-4" />
+            //     Add Another Medication
+            //   </Button>
+            // </div> */}
 
             {/* Medical Conditions Section */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Stethoscope className="h-5 w-5 text-sky-600" />
                 <h2 className="text-xl font-semibold text-gray-900">Medical Conditions</h2>
@@ -425,7 +447,7 @@ export default function MedicalInfoPage() {
                 <Plus className="mr-2 h-4 w-4" />
                 Add Another Condition
               </Button>
-            </div>
+            </div> */}
 
             {/* Blood Type Section */}
             <div className="space-y-4">

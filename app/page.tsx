@@ -13,6 +13,10 @@ import { FloatingNavbar } from "@/components/aceternity/floating-navbar"
 import { FeatureCard } from "@/components/aceternity/feature-card"
 import { StepCard } from "@/components/aceternity/step-card"
 import { ChevronRight, Shield, Users, Database, Lock, Stethoscope, FileText, Fingerprint } from "lucide-react"
+import dynamic from "next/dynamic"
+
+// Use dynamic import with no SSR for the chatbot component
+const ChatbotPopup = dynamic(() => import("@/components/ChatbotPopup"), { ssr: false })
 
 // Use a simple 3D model for the medical representation
 function MedicalModel(props) {
@@ -313,6 +317,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Add the ChatbotPopup component here */}
+      <ChatbotPopup />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   FileText,
   Users,
@@ -15,6 +15,8 @@ import {
   Home,
   PlusCircle,
   User,
+  Copy,
+  Video,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -33,6 +35,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useUser } from "@/context/UserContext";
 
 // Update the sidebar items and footer items to handle logout properly
 import { useRouter } from "next/navigation"
@@ -60,6 +64,13 @@ export default function DoctorDashboard() {
     type: "Consultation",
     notes: "",
   })
+
+  const { user: loggedInUser } = useUser();
+  console.log("Logged in user:", loggedInUser);
+  const [currentMeetingLink, setCurrentMeetingLink] = useState("")
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false)
+  const [currentAppointment, setCurrentAppointment] = useState(null)
+  const meetLinkRef = useRef(null)
 
   // Format today's date for comparison
   const today = new Date().toISOString().split("T")[0]
@@ -286,6 +297,31 @@ export default function DoctorDashboard() {
     })
   }
 
+  const generateMeetLink = () => {
+    const meetId = Math.random().toString(36).substring(2, 12)
+    return `https://meet.google.com/${meetId}`
+  }
+
+  const handleStartSession = (appointment) => {
+    const meetLink = generateMeetLink()
+    setCurrentMeetingLink(meetLink)
+    setCurrentAppointment(appointment)
+    setIsMeetingModalOpen(true)
+
+    // Open the meeting in a new tab
+    window.open(meetLink, "_blank")
+  }
+
+  const copyMeetingLink = () => {
+    navigator.clipboard.writeText(currentMeetingLink)
+    toast.success("Meeting link copied to clipboard")
+  }
+
+  const shareWithPatient = () => {
+    // In a real application, this would send the link via SMS, email, or notification
+    toast.success(`Meeting link shared with ${currentAppointment?.patientName}`)
+  }
+
   // Inside the component:
   const router = useRouter()
   const { logout } = useAuth()
@@ -450,8 +486,8 @@ export default function DoctorDashboard() {
                               patient.status === "stable"
                                 ? "bg-green-100 text-green-600"
                                 : patient.status === "improving"
-                                  ? "bg-blue-100 text-blue-600"
-                                  : "bg-red-100 text-red-600"
+                                ? "bg-blue-100 text-blue-600"
+                                : "bg-red-100 text-red-600"
                             }
                           `}
                           >
@@ -517,7 +553,12 @@ export default function DoctorDashboard() {
                         <Button variant="outline" size="sm" className="h-8">
                           Reschedule
                         </Button>
-                        <Button size="sm" className="h-8 bg-sky-600 hover:bg-sky-700 text-white">
+                        <Button
+                          size="sm"
+                          className="h-8 bg-sky-600 hover:bg-sky-700 text-white"
+                          onClick={() => handleStartSession(appointment)}
+                        >
+                          <Video className="h-4 w-4 mr-1" />
                           Start Session
                         </Button>
                       </div>
@@ -798,6 +839,67 @@ export default function DoctorDashboard() {
           </div>
           <DialogFooter>
             <Button onClick={() => setIsViewScheduleOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Meeting Modal */}
+      <Dialog open={isMeetingModalOpen} onOpenChange={setIsMeetingModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Virtual Meeting Started</DialogTitle>
+            <DialogDescription>
+              Your appointment with {currentAppointment?.patientName} is now live
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                <Video className="h-6 w-6" />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between">
+              <input
+                ref={meetLinkRef}
+                readOnly
+                value={currentMeetingLink}
+                className="bg-transparent border-none outline-none flex-1 text-sm"
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="sm" variant="ghost" onClick={copyMeetingLink}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy link</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            
+            <p className="text-sm text-gray-500 mt-4 mb-2">Share this link with your patient:</p>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1 bg-sky-600 hover:bg-sky-700 text-white" 
+                onClick={shareWithPatient}
+              >
+                Share with Patient
+              </Button>
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={() => setIsMeetingModalOpen(false)}>
+              Close
+            </Button>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white" 
+              onClick={() => window.open(currentMeetingLink, '_blank')}
+            >
+              Rejoin Meeting
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

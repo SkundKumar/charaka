@@ -131,7 +131,6 @@ export default function RegisterPage() {
     setConfirmPassword(e.target.value)
     setConfirmPasswordError("")
   }
-
   const handleSendOtp = () => {
     // Validate Aadhar number
     if (aadharNumber.replace(/\s/g, "").length !== 12) {
@@ -154,11 +153,29 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     // Simulate API call to fetch Aadhar data
-    setTimeout(() => {
-      setIsLoading(false)
-      setStep(2)
-      alert(`OTP sent! For demo purposes, use: ${generatedOtp}`)
-    }, 1500)
+    const aadharNumberMain = aadharNumber.replace(/\s/g, "") // Remove spaces for API call
+    console.log("Sending Aadhar number:", aadharNumberMain);
+
+    fetch("http://10.12.16.45:4505/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ aadharNumberMain, password }), // Send Aadhar number and password to the backend
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        if (res.success) {
+          setGeneratedOtp(res.reference_id); // Save the reference ID from the response
+          setStep(2); // Move to the OTP verification step
+        } else {
+          setAadharError("Failed to send OTP. Please try again.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        setAadharError("An error occurred while sending OTP. Please try again.");
+      })
+      .finally(() => setIsLoading(false));
   }
 
   const handleVerifyOtp = () => {
@@ -167,18 +184,34 @@ export default function RegisterPage() {
       return
     }
 
-    if (otp !== generatedOtp && otp !== "123456") {
-      setOtpError("Invalid OTP. Please try again.")
+    if (otp.length !== 6 || isNaN(Number(otp))) {
+      setOtpError("Invalid OTP format. Please enter a 6-digit numeric code.")
       return
     }
 
     setIsLoading(true)
 
-    // Simulate API call to verify OTP and fetch Aadhar data
-    setTimeout(() => {
-      setIsLoading(false)
-      setShowConfirmationModal(true)
-    }, 1500)
+    // Send OTP verification request to the backend
+    fetch("http://10.12.16.45:4505/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ otp, reference_id: generatedOtp }), // Use the reference ID from handleSendOtp
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        if (res.success) {
+          setUserData(res.data); // Update userData with the response data
+          setShowConfirmationModal(true);
+        } else {
+          setOtpError(res.message || "Failed to verify OTP. Please try again.");
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        setOtpError("An error occurred while verifying OTP. Please try again.")
+      })
+      .finally(() => setIsLoading(false))
   }
 
   const handleConfirmRegister = () => {
